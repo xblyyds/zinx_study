@@ -26,11 +26,11 @@ var GlobalObject *GlobalObj
 
 // 初始化当前的 GlobalObject
 func init() {
-	GlobalObject := &GlobalObj{
+	GlobalObject = &GlobalObj{
 		Host:           "0,0,0,0",
 		TcpPort:        8999,
 		Name:           "ZinxServerApp",
-		Version:        "V0.4",
+		Version:        "V0.5",
 		MaxConn:        1000,
 		MaxPackageSize: 4096,
 	}

@@ -24,18 +24,18 @@ type Connection struct {
 	// 告知当前链接已经退出的/停止 channel
 	ExitChan chan bool
 
-	// 该链接处理的方法Router
-	Router ziface.IRouter
+	// 消息的管理 MsgId 和 对应处理业务API 关系
+	MsgHandler ziface.IMsgHandle
 }
 
 // 初始化链接模块的方法
-func NewConnection(conn *net.TCPConn, connID uint32, router ziface.IRouter) *Connection {
+func NewConnection(conn *net.TCPConn, connID uint32, msgHandler ziface.IMsgHandle) *Connection {
 	c := &Connection{
-		Conn:     conn,
-		ConnID:   connID,
-		isClosed: false,
-		Router:   router,
-		ExitChan: make(chan bool, 1),
+		Conn:       conn,
+		ConnID:     connID,
+		isClosed:   false,
+		MsgHandler: msgHandler,
+		ExitChan:   make(chan bool, 1),
 	}
 
 	return c
@@ -88,12 +88,8 @@ func (c *Connection) StartReader() {
 			msg:  msg,
 		}
 
-		// 执行注册的路由方法
-		go func(request ziface.IRequest) {
-			c.Router.PreHandle(request)
-			c.Router.Handle(request)
-			c.Router.PostHandle(request)
-		}(&req)
+		// 根据绑定好的MsgId找到处理对应API业务 执行
+		go c.MsgHandler.DoMsgHandler(&req)
 
 		// 从路由中，找到注册绑定的Conn对应的router调用
 	}

@@ -28,6 +28,9 @@ func (s *Server) Start() {
 
 	fmt.Printf("[Start] Server Listener at IP :%s, Port :%d, is starting\n", s.IP, s.Port)
 	go func() {
+		// 0 开启消息队列及 worker 工作池
+		s.MsgHandler.StartWorkerPool()
+
 		// 1、获取一个TCP的Addr
 		addr, err := net.ResolveTCPAddr(s.IPVersion, fmt.Sprintf("%s:%d", s.IP, s.Port))
 		if err != nil {
@@ -64,7 +67,7 @@ func (s *Server) Start() {
 }
 
 func (s *Server) Stop() {
-	// 将一些服务器的资源，状态或者一些已经开辟的链接信息，进行停止或者回收
+	//TODO 将一些服务器的资源，状态或者一些已经开辟的链接信息，进行停止或者回收
 }
 
 func (s *Server) Serve() {

@@ -3,6 +3,7 @@ package znet
 import (
 	"errors"
 	"fmt"
+	"go-study/zinx/utils"
 	"go-study/zinx/ziface"
 	"io"
 	"net"
@@ -92,10 +93,14 @@ func (c *Connection) StartReader() {
 			msg:  msg,
 		}
 
-		// 根据绑定好的MsgId找到处理对应API业务 执行
-		go c.MsgHandler.DoMsgHandler(&req)
+		if utils.GlobalObject.WorkerPoolSize > 0 {
+			c.MsgHandler.SendMsgToTaskQueue(&req)
+		} else {
+			// 根据绑定好的MsgId找到处理对应API业务 执行
+			go c.MsgHandler.DoMsgHandler(&req)
 
-		// 从路由中，找到注册绑定的Conn对应的router调用
+			// 从路由中，找到注册绑定的Conn对应的router调用
+		}
 	}
 }
 

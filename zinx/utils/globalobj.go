@@ -32,7 +32,7 @@ func init() {
 		Host:             "0,0,0,0",
 		TcpPort:          8999,
 		Name:             "ZinxServerApp",
-		Version:          "V0.9",
+		Version:          "V0.10",
 		MaxConn:          1000,
 		MaxPackageSize:   4096,
 		WorkerPoolSize:   10,   // worker 工作池的队列个数

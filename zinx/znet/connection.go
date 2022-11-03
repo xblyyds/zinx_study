@@ -7,6 +7,7 @@ import (
 	"go-study/zinx/ziface"
 	"io"
 	"net"
+	"sync"
 )
 
 /*
@@ -32,6 +33,12 @@ type Connection struct {
 
 	// 消息的管理 MsgId 和 对应处理业务API 关系
 	MsgHandler ziface.IMsgHandle
+
+	// 连接属性集合
+	property map[string]interface{}
+
+	// 保护连接属性的锁
+	propertyLock sync.RWMutex
 }
 
 // 初始化链接模块的方法
@@ -44,6 +51,7 @@ func NewConnection(server ziface.IServer, conn *net.TCPConn, connID uint32, msgH
 		MsgHandler: msgHandler,
 		ExitChan:   make(chan bool, 1),
 		msgChan:    make(chan []byte),
+		property:   make(map[string]interface{}),
 	}
 
 	// 将 conn 添加到 ConnManager
@@ -197,4 +205,31 @@ func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 	// 读写分离：将数据发送给消息管道
 	c.msgChan <- binaryMsg
 	return nil
+}
+
+func (c *Connection) SetProperty(key string, value interface{}) {
+	c.propertyLock.Lock()
+	defer c.propertyLock.Unlock()
+
+	// 添加连接属性
+	c.property[key] = value
+}
+
+func (c *Connection) GetProperty(key string) (value interface{}, err error) {
+	c.propertyLock.RLock()
+	defer c.propertyLock.RUnlock()
+
+	if value, ok := c.property[key]; ok {
+		return value, nil
+	} else {
+		return nil, errors.New("no property FOUND")
+	}
+}
+
+func (c *Connection) RemoveProperty(key string) {
+	c.propertyLock.Lock()
+	defer c.propertyLock.Unlock()
+
+	// 删除属性
+	delete(c.property, key)
 }
